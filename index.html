@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mike - Análisis de Tasas | Argentina</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0a0d12; --surface:#111620; --surface2:#181e2a; --border:#232b3a;
+  --text:#e8edf5; --muted:#6b7a95; --accent:#00e5b0; --accent2:#3b82f6; --red:#ff4d6a;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:60px;}
+
+/* HEADER */
+.site-header{background:var(--surface);border-bottom:1px solid var(--border);padding:13px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:200;backdrop-filter:blur(12px);}
+.logo-dot{width:9px;height:9px;background:var(--accent);border-radius:50%;flex-shrink:0;box-shadow:0 0 8px var(--accent);}
+.site-title{font-size:1rem;font-weight:800;letter-spacing:-0.4px;}
+.site-title span{color:var(--accent);}
+.header-date{margin-left:auto;font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--muted);white-space:nowrap;}
+
+/* FILTER PANEL */
+.filter-panel{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 14px;display:flex;flex-direction:column;gap:10px;position:sticky;top:46px;z-index:150;}
+
+.search-input{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px 12px;font-family:'Syne',sans-serif;font-size:0.82rem;outline:none;}
+.search-input::placeholder{color:var(--muted);}
+.search-input:focus{border-color:var(--accent);}
+
+/* horizontal scroll rows */
+.hrow{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px;align-items:center;}
+.hrow::-webkit-scrollbar{display:none;}
+
+/* Tab chips */
+.chip{padding:6px 14px;border-radius:20px;font-size:0.74rem;font-weight:700;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0;}
+.chip.active{background:var(--accent);color:#000;border-color:var(--accent);box-shadow:0 0 10px rgba(0,229,176,.25);}
+.chip:hover:not(.active){color:var(--text);border-color:var(--muted);}
+
+/* Sort buttons */
+.slabel{font-size:0.65rem;color:var(--muted);white-space:nowrap;font-weight:700;letter-spacing:.5px;text-transform:uppercase;flex-shrink:0;}
+.sbtn{padding:6px 12px;border-radius:8px;font-size:0.74rem;font-weight:600;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0;font-family:'Syne',sans-serif;display:flex;align-items:center;gap:4px;}
+.sbtn.active{border-color:var(--accent2);color:var(--accent2);background:rgba(59,130,246,.1);}
+.sbtn:hover:not(.active){color:var(--text);}
+.sarr{font-size:.8rem;}
+
+/* Selects */
+.filter-select{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:7px 10px;font-family:'Syne',sans-serif;font-size:0.76rem;outline:none;flex-shrink:0;max-width:170px;}
+.filter-select:focus{border-color:var(--accent);}
+.filter-select option{background:#111620;}
+
+/* Results bar */
+.results-bar{display:flex;align-items:center;justify-content:space-between;padding:7px 14px;font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--muted);}
+.clear-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:3px 10px;font-size:0.7rem;cursor:pointer;font-family:'Syne',sans-serif;transition:all .15s;}
+.clear-btn:hover{color:var(--red);border-color:var(--red);}
+
+/* PAGE */
+.page{padding:0 12px;}
+
+/* SECTION HEADER */
+.sec-hdr{display:flex;align-items:center;gap:7px;padding:16px 2px 7px;font-size:0.68rem;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent);}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px;margin-bottom:8px;transition:background .13s,border-color .13s;}
+.card:hover{background:var(--surface2);border-color:#2e3a50;}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px;}
+.card-name{font-size:0.87rem;font-weight:700;color:var(--text);line-height:1.35;flex:1;}
+.card-sub{font-size:0.69rem;color:var(--muted);font-weight:400;margin-top:3px;line-height:1.4;}
+.card-rate{font-family:'DM Mono',monospace;font-size:1.25rem;font-weight:500;border-radius:8px;padding:5px 11px;white-space:nowrap;flex-shrink:0;line-height:1;}
+.card-meta{display:flex;flex-wrap:wrap;gap:5px;align-items:center;}
+.card-extra{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;gap:16px;flex-wrap:wrap;}
+.ei{display:flex;flex-direction:column;gap:2px;}
+.eilabel{font-size:0.59rem;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);font-weight:700;}
+.eival{font-family:'DM Mono',monospace;font-size:0.77rem;}
+.varhi{color:var(--red);}
+.varlo{color:#55cc77;}
+
+/* Pond bar */
+.pbwrap{display:flex;align-items:center;gap:6px;}
+.pbbg{width:55px;height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;}
+.pbfill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent2),var(--accent));}
+
+/* Badges */
+.banco-badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:0.69rem;font-weight:600;white-space:nowrap;}
+.tipo-badge{font-size:0.62rem;font-weight:600;letter-spacing:.4px;padding:2px 7px;border-radius:4px;text-transform:uppercase;}
+.tipo-cuenta{background:#1a2b40;color:#66aaff;border:1px solid #2a3d60;}
+.tipo-billetera{background:#2a1a30;color:#cc77ff;border:1px solid #4a2a50;}
+.tipo-fci{background:#1a2a1a;color:#55cc88;border:1px solid #2a4a2a;}
+.banco-balanz{background:#1a2540;color:#6b9fff;border:1px solid #2a3d6e;}
+.banco-banco-nacion{background:#1a2b1a;color:#6fcf6f;border:1px solid #2a4a2a;}
+.banco-banco-macro{background:#2a1a10;color:#ffaa55;border:1px solid #4a2a10;}
+.banco-cocos{background:#2a1a2a;color:#cc88ff;border:1px solid #4a2a4a;}
+.banco-naranjax{background:#2a1a0a;color:#ff9944;border:1px solid #4a2a0a;}
+.banco-mercadopago{background:#1a1a40;color:#4499ff;border:1px solid #2a2a60;}
+.banco-personalpay{background:#2a2a1a;color:#cccc44;border:1px solid #4a4a1a;}
+.banco-fiwind{background:#1a2a2a;color:#44ccaa;border:1px solid #1a4a3a;}
+.banco-ual{background:#1a2a1a;color:#55cc77;border:1px solid #1a4a2a;}
+.banco-lemon{background:#2a2a0a;color:#ddcc00;border:1px solid #4a4a0a;}
+.banco-letsbit{background:#1a1a2a;color:#8877ff;border:1px solid #2a2a4a;}
+.banco-prex{background:#2a1a1a;color:#ff6666;border:1px solid #4a1a1a;}
+.banco-icbc{background:#2a1a10;color:#ff8844;border:1px solid #4a2a0a;}
+.banco-adcap{background:#101a2a;color:#4488ff;border:1px solid #1a2a4a;}
+.banco-toronto{background:#1a1a1a;color:#aaaaaa;border:1px solid #333;}
+.banco-cresium{background:#1a2020;color:#44ddbb;border:1px solid #1a3a30;}
+.banco-supervielle{background:#2a1020;color:#ff88aa;border:1px solid #4a1a30;}
+.banco-carrefour{background:#2a1010;color:#ff5555;border:1px solid #4a1a1a;}
+.banco-default{background:#1a1a2a;color:#8888cc;border:1px solid #2a2a4a;}
+
+/* DESKTOP TABLE */
+@media(min-width:768px){
+  .cards-list{display:none;}
+  .table-section{display:block!important;}
+  .filter-panel{flex-direction:row;flex-wrap:wrap;align-items:flex-start;gap:10px;top:55px;}
+  .search-input{width:220px;}
+  .hrow{flex-wrap:wrap;overflow:visible;}
+  .page{padding:0 24px;max-width:920px;margin:0 auto;}
+}
+@media(max-width:767px){
+  .table-section{display:none!important;}
+}
+
+.table-section{display:none;}
+.table-wrap{border-radius:12px;border:1px solid var(--border);background:var(--surface);overflow-x:auto;margin-bottom:20px;}
+table{width:100%;border-collapse:collapse;font-size:0.79rem;}
+thead th{background:#0e1520;padding:11px 13px;text-align:left;font-size:0.67rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);white-space:nowrap;user-select:none;cursor:pointer;border-bottom:1px solid var(--border);transition:color .13s;}
+thead th:hover{color:var(--accent);}
+thead th.sorted-asc::after{content:' ↑';color:var(--accent);}
+thead th.sorted-desc::after{content:' ↓';color:var(--accent);}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:var(--surface2);}
+td{padding:10px 13px;vertical-align:middle;white-space:nowrap;}
+.tdname{white-space:normal;min-width:180px;max-width:220px;font-weight:600;font-size:0.78rem;line-height:1.4;}
+.tdname small{display:block;font-size:0.63rem;color:var(--muted);font-weight:400;margin-top:2px;}
+.rcell{font-family:'DM Mono',monospace;font-size:0.84rem;font-weight:500;padding:4px 9px;border-radius:6px;display:inline-block;min-width:66px;text-align:right;}
+.vcell{font-family:'DM Mono',monospace;font-size:0.77rem;padding:3px 7px;border-radius:5px;display:inline-block;}
+.var-hi{background:#3d1a1a;color:var(--red);border:1px solid #6a2a2a;}
+.var-lo{background:#1a2a1a;color:#55cc77;}
+.pwrap{display:flex;align-items:center;gap:7px;min-width:110px;}
+.pbg{flex:1;height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;}
+.pfl{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent2),var(--accent));}
+.pnum{font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--muted);min-width:38px;text-align:right;}
+.sec-tr td{background:var(--surface2);color:var(--accent);font-size:0.67rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:7px 13px;border-top:1px solid var(--border);}
+.empty{text-align:center;padding:50px;color:var(--muted);font-size:0.87rem;}
+.mono{font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--muted);}
+
+.note{margin:14px 0;padding:11px 13px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent2);border-radius:8px;font-size:0.73rem;color:var(--muted);line-height:1.6;}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="logo-dot"></div>
+  <div class="site-title">Mike — <span>Análisis de Tasas</span></div>
+  <div class="header-date" id="header-date"></div>
+</header>
+
+<div class="filter-panel">
+  <!-- Search -->
+  <input class="search-input" id="search" type="text" placeholder="🔍 Buscar fondo o banco..." oninput="render()">
+
+  <!-- Category chips -->
+  <div class="hrow">
+    <span class="chip active" onclick="setTab('todos',this)">Todos</span>
+    <span class="chip" onclick="setTab('garantizado',this)">✅ Garantizados</span>
+    <span class="chip" onclick="setTab('condiciones',this)">⚡ Con condiciones</span>
+    <span class="chip" onclick="setTab('fci',this)">📊 FCI</span>
+  </div>
+
+  <!-- Sort buttons -->
+  <div class="hrow">
+    <span class="slabel">Ordenar:</span>
+    <button class="sbtn active" id="btn-rend" onclick="setSort('rendimiento',this)">Tasa <span class="sarr" id="arr-rendimiento">↓</span></button>
+    <button class="sbtn" id="btn-banco" onclick="setSort('banco',this)">Banco <span class="sarr" id="arr-banco"></span></button>
+    <button class="sbtn" id="btn-pond" onclick="setSort('ponderacion',this)">Ponderación <span class="sarr" id="arr-ponderacion"></span></button>
+    <button class="sbtn" id="btn-var" onclick="setSort('varianza',this)">Varianza <span class="sarr" id="arr-varianza"></span></button>
+  </div>
+
+  <!-- Selects -->
+  <div class="hrow">
+    <select class="filter-select" id="filterBanco" onchange="render()">
+      <option value="">Todas las entidades</option>
+    </select>
+    <select class="filter-select" id="filterTipo" onchange="render()">
+      <option value="">Todos los tipos</option>
+      <option value="Cuenta Remunerada">Cuenta Remunerada</option>
+      <option value="Billetera">Billetera</option>
+      <option value="Money Market">Money Market (FCI)</option>
+    </select>
+  </div>
+</div>
+
+<div class="results-bar">
+  <span id="results-count">—</span>
+  <button class="clear-btn" onclick="clearAll()">✕ Limpiar filtros</button>
+</div>
+
+<div class="page">
+  <!-- MOBILE: cards -->
+  <div class="cards-list" id="cards-list"></div>
+
+  <!-- DESKTOP: table -->
+  <div class="table-section" id="table-section">
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th onclick="thSort('fondo')">Fondo</th>
+          <th onclick="thSort('banco')">Entidad</th>
+          <th onclick="thSort('tipo')">Tipo</th>
+          <th onclick="thSort('rendimiento')">TNA</th>
+          <th onclick="thSort('varianza')">Varianza</th>
+          <th onclick="thSort('ponderacion')">Ponderación</th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="note">⚠️ Los rendimientos pasados no garantizan rendimientos futuros. Datos de FCI calculados en base a cuotaparte (CAFCI). Tasas de cuentas y billeteras son TNA vigentes a la última actualización. Siempre verificá las condiciones en la app oficial antes de invertir.</div>
+</div>
+
+<script>
+const DATA = [
+  {fondo:"Carrefour Banco",banco:"Carrefour",tipo:"Cuenta Remunerada",rendimiento:30.00,varianza:null,ponderacion:null,limite:"$4.228.800/mes",section:"Rendimiento garantizado"},
+  {fondo:"NaranjaX",banco:"NaranjaX",tipo:"Cuenta Remunerada",rendimiento:25.00,varianza:null,ponderacion:null,limite:"$1M",section:"Rendimiento garantizado"},
+  {fondo:"Fiwind",banco:"Fiwind",tipo:"Billetera",rendimiento:24.00,varianza:null,ponderacion:null,limite:"$750K",section:"Rendimiento garantizado"},
+  {fondo:"Ualá",banco:"Ualá",tipo:"Cuenta Remunerada",rendimiento:23.00,varianza:null,ponderacion:null,limite:"$1M",section:"Rendimiento garantizado"},
+  {fondo:"Ualá Plus 2",banco:"Ualá",tipo:"Cuenta Remunerada",rendimiento:29.00,varianza:null,ponderacion:null,limite:"$1M",nota:"Acumulá $500.000 entre inversiones, consumos y cobros.",section:"Con condiciones especiales"},
+  {fondo:"Ualá Plus 1",banco:"Ualá",tipo:"Cuenta Remunerada",rendimiento:26.00,varianza:null,ponderacion:null,limite:"$1M",nota:"Acumulá $250.000 entre inversiones, consumos y cobros.",section:"Con condiciones especiales"},
+  {fondo:"Cresium",banco:"Cresium",tipo:"Cuenta Remunerada",rendimiento:22.53,varianza:null,ponderacion:null,limite:"Sin límite",nota:"Solo Personas Jurídicas.",section:"Con condiciones especiales"},
+  {fondo:"Banco Nación",banco:"Banco Nación",tipo:"Cuenta Remunerada",rendimiento:20.00,varianza:null,ponderacion:null,limite:"$2M",nota:"Exclusivo para clientes de cartera consumo.",section:"Con condiciones especiales"},
+  {fondo:"Supervielle",banco:"Supervielle",tipo:"Cuenta Remunerada",rendimiento:19.50,varianza:null,ponderacion:null,limite:"$1M",nota:"Solo Clientes Plan Sueldo.",section:"Con condiciones especiales"},
+  {fondo:"Pellegrini Crecimiento - Clase A",banco:"Banco Nación",tipo:"Money Market",rendimiento:53.72,varianza:0.655,ponderacion:50.44,section:"FCI"},
+  {fondo:"Pellegrini Renta Fija II - Clase A",banco:"Banco Nación",tipo:"Money Market",rendimiento:49.15,varianza:0.581,ponderacion:46.24,section:"FCI"},
+  {fondo:"Balanz Institucional - Clase A",banco:"Balanz",tipo:"Money Market",rendimiento:50.63,varianza:3.486,ponderacion:33.20,section:"FCI"},
+  {fondo:"Pionero Renta Ahorro - Clase A",banco:"Banco Macro",tipo:"Money Market",rendimiento:42.30,varianza:0.344,ponderacion:40.58,section:"FCI"},
+  {fondo:"Balanz Capital Ahorro - Clase A",banco:"Balanz",tipo:"Money Market",rendimiento:40.53,varianza:0.328,ponderacion:38.89,section:"FCI"},
+  {fondo:"Balanz Long Pesos - Clase A",banco:"Balanz",tipo:"Money Market",rendimiento:40.35,varianza:0.604,ponderacion:37.33,section:"FCI"},
+  {fondo:"Balanz Lecaps - Clase A",banco:"Balanz",tipo:"Money Market",rendimiento:36.98,varianza:0.472,ponderacion:34.62,section:"FCI"},
+  {fondo:"Pionero FF",banco:"Banco Macro",tipo:"Money Market",rendimiento:36.77,varianza:0.227,ponderacion:35.64,section:"FCI"},
+  {fondo:"Balanz Renta Fija Estrategica - Clase A",banco:"Balanz",tipo:"Money Market",rendimiento:35.62,varianza:0.318,ponderacion:34.03,section:"FCI"},
+  {fondo:"Cocos Pesos Plus - Clase A",banco:"Cocos",tipo:"Money Market",rendimiento:29.52,varianza:0.146,ponderacion:28.79,section:"FCI"},
+  {fondo:"Balanz Capital Abierto Pymes FCI - Clase A",banco:"Balanz",tipo:"Money Market",rendimiento:29.42,varianza:0.158,ponderacion:28.63,section:"FCI"},
+  {fondo:"Pellegrini Renta Fija Plus - Clase A",banco:"Banco Nación",tipo:"Money Market",rendimiento:29.31,varianza:0.480,ponderacion:26.91,section:"FCI"},
+  {fondo:"Pellegrini Renta Pesos - Clase A",banco:"Banco Nación",tipo:"Money Market",rendimiento:28.27,varianza:0.039,ponderacion:28.07,section:"FCI"},
+  {fondo:"Pellegrini Renta Fija Ahorro - Clase A",banco:"Banco Nación",tipo:"Money Market",rendimiento:27.73,varianza:0.468,ponderacion:25.39,section:"FCI"},
+  {fondo:"Cocos Rendimiento - Clase A",banco:"Cocos",tipo:"Money Market",rendimiento:26.87,varianza:0.032,ponderacion:26.71,section:"FCI"},
+  {fondo:"Ualintec Ahorro Pesos - Clase A",banco:"NaranjaX",tipo:"Money Market",rendimiento:25.51,varianza:0.045,ponderacion:25.29,section:"FCI"},
+  {fondo:"Mercado Fondo - Clase A",banco:"Mercado Pago",tipo:"Money Market",rendimiento:25.48,varianza:0.040,ponderacion:25.28,section:"FCI"},
+  {fondo:"Delta Pesos - Clase X (Personal Pay)",banco:"Personal Pay",tipo:"Money Market",rendimiento:25.45,varianza:0.037,ponderacion:25.27,section:"FCI"},
+  {fondo:"Delta Pesos - Clase X (Fiwind)",banco:"Fiwind",tipo:"Money Market",rendimiento:25.45,varianza:0.037,ponderacion:25.27,section:"FCI"},
+  {fondo:"Balanz Capital Money Market - Clase A",banco:"Balanz",tipo:"Money Market",rendimiento:25.06,varianza:0.040,ponderacion:24.87,section:"FCI"},
+  {fondo:"Fima Premium - Clase P",banco:"Lemon",tipo:"Money Market",rendimiento:24.73,varianza:0.093,ponderacion:24.27,section:"FCI"},
+  {fondo:"Pionero Pesos - Clase A",banco:"Banco Macro",tipo:"Money Market",rendimiento:24.67,varianza:0.037,ponderacion:24.49,section:"FCI"},
+  {fondo:"Pionero Pesos Plus - Clase A",banco:"Banco Macro",tipo:"Money Market",rendimiento:24.39,varianza:0.052,ponderacion:24.13,section:"FCI"},
+  {fondo:"SBS Ahorro Pesos - Clase A",banco:"Ualá",tipo:"Money Market",rendimiento:24.09,varianza:0.033,ponderacion:23.92,section:"FCI"},
+  {fondo:"Cocos Ahorro - Clase A",banco:"Cocos",tipo:"Money Market",rendimiento:23.00,varianza:0.053,ponderacion:22.74,section:"FCI"},
+  {fondo:"Allaria Ahorro - Clase E",banco:"Prex",tipo:"Money Market",rendimiento:22.59,varianza:null,ponderacion:null,section:"FCI"},
+  {fondo:"Alpha Pesos - Clase A",banco:"ICBC",tipo:"Money Market",rendimiento:22.50,varianza:null,ponderacion:null,section:"FCI"},
+  {fondo:"Adcap Ahorro Pesos Fondo de Dinero - Clase A",banco:"Adcap",tipo:"Money Market",rendimiento:22.28,varianza:null,ponderacion:null,section:"FCI"},
+  {fondo:"Toronto Trust Ahorro - Clase A",banco:"Toronto Trust",tipo:"Money Market",rendimiento:22.25,varianza:null,ponderacion:null,section:"FCI"},
+  {fondo:"ST Zero - Clase D",banco:"Let's Bit",tipo:"Money Market",rendimiento:22.18,varianza:0.029,ponderacion:22.03,section:"FCI"},
+];
+
+let sortCol='rendimiento', sortDir=-1, currentTab='todos';
+
+const SORT_BTNS=['btn-rend','btn-banco','btn-pond','btn-var'];
+const SORT_KEYS=['rendimiento','banco','ponderacion','varianza'];
+
+const bancoCls=b=>({'Balanz':'banco-balanz','Banco Nación':'banco-banco-nacion','Banco Macro':'banco-banco-macro','Cocos':'banco-cocos','NaranjaX':'banco-naranjax','Mercado Pago':'banco-mercadopago','Personal Pay':'banco-personalpay','Fiwind':'banco-fiwind','Ualá':'banco-ual','Lemon':'banco-lemon',"Let's Bit":'banco-letsbit','Prex':'banco-prex','ICBC':'banco-icbc','Adcap':'banco-adcap','Toronto Trust':'banco-toronto','Cresium':'banco-cresium','Supervielle':'banco-supervielle','Carrefour':'banco-carrefour'}[b]||'banco-default');
+const tipoCls=t=>t==='Cuenta Remunerada'?'tipo-cuenta':t==='Billetera'?'tipo-billetera':'tipo-fci';
+
+function rc(v){
+  const lo=19,hi=55,t=Math.min(Math.max((v-lo)/(hi-lo),0),1);
+  if(t<0.5){const tt=t*2,r=Math.round(107+tt*(59-107)),g=Math.round(122+tt*(130-122)),b=Math.round(149+tt*(246-149));return{bg:`rgba(${r},${g},${b},.14)`,c:`rgb(${r},${g},${b})`};}
+  const tt=(t-.5)*2,r=Math.round(59+tt*(0-59)),g=Math.round(130+tt*(229-130)),b=Math.round(246+tt*(176-246));
+  return{bg:`rgba(${r},${g},${b},.12)`,c:`rgb(${r},${g},${b})`};
+}
+function fmt(v,d=2){if(v==null)return'—';return v.toLocaleString('es-AR',{minimumFractionDigits:d,maximumFractionDigits:d})+'%';}
+
+function getRows(){
+  const q=document.getElementById('search').value.toLowerCase();
+  const banco=document.getElementById('filterBanco').value;
+  const tipo=document.getElementById('filterTipo').value;
+  return [...DATA].filter(d=>{
+    if(currentTab==='garantizado'&&d.section!=='Rendimiento garantizado')return false;
+    if(currentTab==='condiciones'&&d.section!=='Con condiciones especiales')return false;
+    if(currentTab==='fci'&&d.section!=='FCI')return false;
+    if(banco&&d.banco!==banco)return false;
+    if(tipo&&d.tipo!==tipo)return false;
+    if(q&&!d.fondo.toLowerCase().includes(q)&&!d.banco.toLowerCase().includes(q))return false;
+    return true;
+  }).sort((a,b)=>{
+    let va=a[sortCol],vb=b[sortCol];
+    if(va==null)va=sortDir===-1?-Infinity:Infinity;
+    if(vb==null)vb=sortDir===-1?-Infinity:Infinity;
+    if(typeof va==='string')return sortDir*va.localeCompare(vb,'es');
+    return sortDir*(vb-va);
+  });
+}
+
+function setTab(tab,el){
+  currentTab=tab;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  if(el)el.classList.add('active');
+  render();
+}
+
+function setSort(col,btn){
+  if(sortCol===col)sortDir*=-1; else{sortCol=col;sortDir=-1;}
+  SORT_BTNS.forEach(id=>document.getElementById(id)&&document.getElementById(id).classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  SORT_KEYS.forEach(k=>{const el=document.getElementById('arr-'+k);if(el)el.textContent=k===sortCol?(sortDir===-1?'↓':'↑'):'';});
+  updateThHeaders();
+  render();
+}
+
+function thSort(col){
+  if(sortCol===col)sortDir*=-1; else{sortCol=col;sortDir=-1;}
+  // sync panel buttons
+  SORT_BTNS.forEach(id=>document.getElementById(id)&&document.getElementById(id).classList.remove('active'));
+  const map={rendimiento:'btn-rend',banco:'btn-banco',ponderacion:'btn-pond',varianza:'btn-var'};
+  if(map[col])document.getElementById(map[col]).classList.add('active');
+  SORT_KEYS.forEach(k=>{const el=document.getElementById('arr-'+k);if(el)el.textContent=k===sortCol?(sortDir===-1?'↓':'↑'):'';});
+  updateThHeaders();
+  render();
+}
+
+function updateThHeaders(){
+  const cols=['fondo','banco','tipo','rendimiento','varianza','ponderacion'];
+  document.querySelectorAll('thead th').forEach((th,i)=>{
+    th.classList.remove('sorted-asc','sorted-desc');
+    if(cols[i]===sortCol)th.classList.add(sortDir===-1?'sorted-desc':'sorted-asc');
+  });
+}
+
+function clearAll(){
+  document.getElementById('search').value='';
+  document.getElementById('filterBanco').value='';
+  document.getElementById('filterTipo').value='';
+  setTab('todos',document.querySelector('.chip'));
+  sortCol='rendimiento';sortDir=-1;
+  SORT_BTNS.forEach(id=>document.getElementById(id)&&document.getElementById(id).classList.remove('active'));
+  document.getElementById('btn-rend').classList.add('active');
+  SORT_KEYS.forEach(k=>{const el=document.getElementById('arr-'+k);if(el)el.textContent='';});
+  document.getElementById('arr-rendimiento').textContent='↓';
+  updateThHeaders();
+  render();
+}
+
+function render(){
+  const rows=getRows();
+  const maxP=Math.max(...DATA.filter(d=>d.ponderacion!=null).map(d=>d.ponderacion));
+  document.getElementById('results-count').textContent=`${rows.length} resultado${rows.length!==1?'s':''}`;
+  const ICONS={'Rendimiento garantizado':'✅','Con condiciones especiales':'⚡','FCI':'📊'};
+
+  // MOBILE CARDS
+  const cl=document.getElementById('cards-list');
+  let ch='',lastSec=null;
+  rows.forEach(d=>{
+    if(currentTab==='todos'&&d.section!==lastSec){lastSec=d.section;ch+=`<div class="sec-hdr">${ICONS[d.section]||'📂'} ${d.section}</div>`;}
+    const col=rc(d.rendimiento);
+    ch+=`<div class="card">
+      <div class="card-top">
+        <div>
+          <div class="card-name">${d.fondo}</div>
+          ${d.nota?`<div class="card-sub">${d.nota}</div>`:''}
+          ${d.limite?`<div class="card-sub">Límite: ${d.limite}</div>`:''}
+        </div>
+        <div class="card-rate" style="background:${col.bg};color:${col.c};border:1px solid ${col.c}44">${fmt(d.rendimiento)}</div>
+      </div>
+      <div class="card-meta">
+        <span class="banco-badge ${bancoCls(d.banco)}">${d.banco}</span>
+        <span class="tipo-badge ${tipoCls(d.tipo)}">${d.tipo}</span>
+      </div>
+      ${(d.varianza!=null||d.ponderacion!=null)?`<div class="card-extra">
+        ${d.varianza!=null?`<div class="ei"><span class="eilabel">Varianza</span><span class="eival ${d.varianza>1?'varhi':'varlo'}">${fmt(d.varianza,3)}</span></div>`:''}
+        ${d.ponderacion!=null?`<div class="ei"><span class="eilabel">Ponderación</span><div class="pbwrap"><div class="pbbg"><div class="pbfill" style="width:${(d.ponderacion/maxP*100).toFixed(1)}%"></div></div><span class="eival" style="color:var(--muted);font-size:.74rem">${fmt(d.ponderacion)}</span></div></div>`:''}
+      </div>`:''}
+    </div>`;
+  });
+  if(rows.length===0)ch='<div style="text-align:center;padding:50px 20px;color:var(--muted);font-size:.87rem">No se encontraron resultados.</div>';
+  cl.innerHTML=ch;
+
+  // DESKTOP TABLE
+  const tbody=document.getElementById('tbody');
+  let th='',lastSecT=null;
+  rows.forEach(d=>{
+    if(currentTab==='todos'&&d.section!==lastSecT){lastSecT=d.section;th+=`<tr class="sec-tr"><td colspan="6">${ICONS[d.section]||'📂'} ${d.section}</td></tr>`;}
+    const col=rc(d.rendimiento);
+    const vh=d.varianza!=null&&d.varianza>1;
+    const pp=d.ponderacion!=null?((d.ponderacion/maxP)*100).toFixed(1):0;
+    th+=`<tr>
+      <td class="tdname">${d.fondo}${d.nota?`<small>${d.nota}</small>`:''}${d.limite?`<small>Límite: ${d.limite}</small>`:''}</td>
+      <td><span class="banco-badge ${bancoCls(d.banco)}">${d.banco}</span></td>
+      <td><span class="tipo-badge ${tipoCls(d.tipo)}">${d.tipo}</span></td>
+      <td><span class="rcell" style="background:${col.bg};color:${col.c};border:1px solid ${col.c}33">${fmt(d.rendimiento)}</span></td>
+      <td>${d.varianza!=null?`<span class="vcell ${vh?'var-hi':'var-lo'}">${fmt(d.varianza,3)}</span>`:'<span class="mono">—</span>'}</td>
+      <td>${d.ponderacion!=null?`<div class="pwrap"><div class="pbg"><div class="pfl" style="width:${pp}%"></div></div><span class="pnum">${fmt(d.ponderacion)}</span></div>`:'<span class="mono">—</span>'}</td>
+    </tr>`;
+  });
+  if(rows.length===0)th=`<tr><td colspan="6" class="empty">No se encontraron resultados.</td></tr>`;
+  tbody.innerHTML=th;
+}
+
+// INIT
+document.getElementById('header-date').textContent=new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'});
+const sel=document.getElementById('filterBanco');
+[...new Set(DATA.map(d=>d.banco))].sort().forEach(b=>{const o=document.createElement('option');o.value=b;o.textContent=b;sel.appendChild(o);});
+document.getElementById('arr-rendimiento').textContent='↓';
+render();
+</script>
+</body>
+</html>
