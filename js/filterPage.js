@@ -13,7 +13,7 @@ const FilterPage = (() => {
 
   // ── Estado interno ────────────────────────────────────────────────────
   let _sortCol = 'rendimiento';
-  let _sortDir = -1;  // -1 = descendente, 1 = ascendente
+  let _sortDir = 1;  // -1 = descendente, 1 = ascendente
   let _tab     = 'todos';
 
   const SORT_BTN_MAP = {
